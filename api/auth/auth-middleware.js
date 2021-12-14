@@ -50,8 +50,8 @@ const checkUsernameExists = async (req, res, next) => {
 };
 
 const validateRoleName = async (req, res, next) => {
-  const role_name = req.body.role_name;
-  if (!role_name || role_name.trim().length < 1) {
+  const { role_name } = req.body;
+  if (!role_name || !role_name.trim()) {
     req.role_name = 'student';
     next();
   } else if (role_name.trim() === 'admin') {
@@ -71,10 +71,16 @@ const validateRoleName = async (req, res, next) => {
 };
 
 const hashPassword = (req, res, next) => {
-  const { password } = req.body;
-  const rounds = process.env.BCRYPT_ROUNDS || 10;
-  const hash = bcrypt.hashSync(password, rounds);
-  req.body.password = hash;
+  const { role_name } = req;
+  const rounds = process.env.BCRYPT_ROUNDS || 8;
+  const hash = bcrypt.hashSync(req.body.password, rounds);
+
+  req.body = {
+    ...req.body,
+    password: hash,
+    role_name,
+  };
+
   next();
 };
 
